@@ -1,0 +1,19 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+.outer {
+	width: 200px;
+	height: 400px;
+	margin: 0 auto;
+	background-color: #555;
+}
+
+.inner {
+	width: 1000px;
+}
+
+.inner p {
+	line-height: 200px;
+	color: #ffffff;
+}
