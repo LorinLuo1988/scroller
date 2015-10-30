@@ -6,12 +6,17 @@
 		this.box = box;
 		this.scrollBox = null;
 		this.contentBox = null;
-		this.backgroundColor = setting.backgroundColor;
+		this.config = {
+			backgroundColor: setting && setting.backgroundColor || "#555555",
+			railColor: setting && setting.railColor || "#333333",
+			draggerColor: setting && setting.draggerColor || "#dadada",
+			barWidth: setting && setting.barWidth || 5,
+			delta: setting && setting.delta || 50
+		},
 		this.scrollBarY = {
 			bar: null,
 			dragger: null,
 			ratio: 0,
-			delta: setting.delta,
 			contentTop: 0,
 			draggerTop: 0,
 			prevOffsetTop: 0,
@@ -21,7 +26,6 @@
 			bar: null,
 			dragger: null,
 			ratio: 0,
-			delta: setting.delta,
 			contentLeft: 0,
 			draggerLeft: 0,
 			prevOffsetLeft: 0,
@@ -96,6 +100,8 @@
 	};
 
 	Scroller.prototype.crateBarY = function () {
+		var config = this.config;
+
 		if (this.contentBox.height() <= this.scrollBox.height()) {
 			return this;
 		}
@@ -107,11 +113,11 @@
 			position: "absolute",
 			top: 0,
 			right: 0,
-			width: 4,
+			width: config.barWidth,
 			padding: "0 1px",
 			height: "100%",
-			borderRadius: "3px",
-			backgroundColor: "#333333",
+			borderRadius: config.barWidth,
+			backgroundColor: config.railColor,
 			display: "none"
 		});
 
@@ -119,11 +125,11 @@
 			position: "absolute",
 			top: 0,
 			left: 0,
-			width: this.scrollBarY.bar.width(),
-			borderRight: "1px solid #333333",
-			borderLeft: "1px solid #333333",
-			backgroundColor: "#dadada",
-			borderRadius: "2px",
+			width: config.barWidth,
+			borderRight: "1px solid " + config.railColor,
+			borderLeft: "1px solid " + config.railColor,
+			backgroundColor: config.draggerColor,
+			borderRadius: config.barWidth,
 			zIndex: 3,
 			height: Math.pow(this.scrollBox.height(), 2) / this.contentBox.height()
 		});
@@ -131,12 +137,14 @@
 		this.scrollBarY.bar.append(this.scrollBarY.dragger);
 		this.scrollBox.append(this.scrollBarY.bar);
 		this.scrollBarY.ratio = (this.contentBox.height() - this.scrollBox.height()) / (this.scrollBox.height() - this.scrollBarY.dragger.height());
-		this.scrollBarY.StepCount = Math.ceil((this.scrollBox.height() - this.scrollBarY.dragger.height()) / this.scrollBarY.delta);
+		this.scrollBarY.StepCount = Math.ceil((this.scrollBox.height() - this.scrollBarY.dragger.height()) / this.config.delta);
 
 		return this;
 	};
 
 	Scroller.prototype.crateBarX = function () {
+		var config = this.config;
+
 		if (this.contentBox.width() <= this.scrollBox.width()) {
 			return this;
 		}
@@ -149,10 +157,10 @@
 			bottom: 0,
 			left: 0,
 			width: "100%",
-			height: 4,
+			height: config.barWidth,
 			padding: "1px 0",
-			borderRadius: "3px",
-			backgroundColor: "#333333",
+			borderRadius: config.barWidth,
+			backgroundColor: config.railColor,
 			display: "none"
 		});
 
@@ -160,11 +168,11 @@
 			position: "absolute",
 			left: 0,
 			top: 0,
-			height: this.scrollBarX.bar.height(),
-			backgroundColor: "#dadada",
-			borderTop: "1px solid #333333",
-			borderBottom: "1px solid #333333",
-			borderRadius: "2px",
+			height: config.barWidth,
+			backgroundColor: config.draggerColor,
+			borderTop: "1px solid " + config.railColor,
+			borderBottom: "1px solid " + config.railColor,
+			borderRadius: config.barWidth,
 			zIndex: 3,
 			width: Math.pow(this.scrollBox.width(), 2) / this.contentBox.width()
 		});
@@ -172,7 +180,7 @@
 		this.scrollBox.append(this.scrollBarX.bar);
 		this.scrollBarX.bar.append(this.scrollBarX.dragger);
 		this.scrollBarX.ratio =  (this.contentBox.width() - this.scrollBox.width()) / (this.scrollBox.width() - this.scrollBarX.dragger.width());
-		this.scrollBarY.StepCount = Math.ceil((this.scrollBox.width() - this.scrollBarX.dragger.width()) / this.scrollBarX.delta);
+		this.scrollBarY.StepCount = Math.ceil((this.scrollBox.width() - this.scrollBarX.dragger.width()) / this.config.delta);
 
 		return this;
 	};
@@ -343,7 +351,7 @@
 
 		}
 
-		deltaY = direction == "up" ? self.scrollBarY.delta : -self.scrollBarY.delta
+		deltaY = direction == "up" ? self.config.delta : -self.config.delta
 		self.scrollBarY.contentTop += deltaY * self.scrollBarY.ratio;
 		self.scrollBarY.draggerTop -= deltaY;
 
@@ -454,10 +462,65 @@
 		}
 	};
 
+	Scroller.prototype.update = function (setting) {
+		this.config.backgroundColor = setting.backgroundColor;
+		this.config.railColor = setting.railColor;
+		this.config.draggerColor = setting.draggerColor;
+		this.config.barWidth = setting.barWidth;
+
+		this.setBarStyle();
+
+		return this;
+	};
+
+	Scroller.prototype.setBarStyle = function () {
+		var config = this.config;
+
+		this.scrollBarX.bar.css({
+			height: config.barWidth,
+			borderRadius: config.barWidth,
+			backgroundColor: config.railColor
+		});
+
+		this.scrollBarX.dragger.css({
+			height: config.barWidth,
+			backgroundColor: config.draggerColor,
+			borderTop: "1px solid " + config.railColor,
+			borderBottom: "1px solid " + config.railColor,
+			borderRadius: config.barWidth
+		});
+
+		this.scrollBarY.bar.css({
+			width: config.barWidth,
+			borderRadius: config.barWidth,
+			backgroundColor: config.railColor
+		});
+
+		this.scrollBarY.dragger.css({
+			width: config.barWidth,
+			borderRight: "1px solid " + config.railColor,
+			borderLeft: "1px solid " + config.railColor,
+			backgroundColor: config.draggerColor,
+			borderRadius: config.barWidth
+		});
+	};
+
+	Scroller.prototype.destroy = function (setting) {
+
+	};
+
 	$.fn.extend({
-		lorinScroller: function (setting) {
-			if (!this[0].scrollerObj) {
-				this[0].scrollerObj = new Scroller(this, setting);
+		lorinScroller: function () {
+			if (arguments.length == 0 && !this[0].scrollerObj) {
+				this[0].scrollerObj = new Scroller(this, arguments[0]);
+			}
+
+			if (arguments[0] == "update" || arguments[0] == "destroy") {
+				if (this[0].scrollerObj) {
+					this[0].scrollerObj[arguments[0]](arguments[1]);
+				}
+			} else if (!this[0].scrollerObj) {
+				this[0].scrollerObj = new Scroller(this, arguments[0]);
 			}
 		}
 	});
@@ -465,8 +528,7 @@
 	$(function ($) {
 		$(".lorin-scroll").each(function (index, dom) {
 			$(dom).lorinScroller({
-				backgroundColor: "",
-				delta: 50
+				barWidth: 10
 			});
 		});
 	});
