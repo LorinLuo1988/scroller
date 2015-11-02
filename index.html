@@ -20,14 +20,38 @@
 		<p>10</p>
 	</div>
 </div>
+
+<button class="destroy">destroy</button>
+<button class="update">update</button>
+<button class="create">create</button>
 <script src="jquery-1.8.3.js"></script>
-<script src="scroller.js"></script>
+<script src="scroller/scroller.js"></script>
 <script>
-	$('.outer').lorinScroller("update", {
-		backgroundColor: "#666666",
-		railColor: "#f5f5f5",
-		draggerColor: "#333333",
-		barWidth: 5
+	$(".destroy").on("click", function () {
+		$(".outer").lorinScroller("destroy");
+	});
+
+	$(".create").on("click", function () {
+		$(".outer").lorinScroller();
+	});
+
+	$(".update").on("click", function () {
+		$('.outer').css({
+			width: 500,
+			height: 600
+		});
+		$('.outer').lorinScroller("update", {
+			backgroundColor: "#666666",
+			railColor: "#f5f5f5",
+			draggerColor: "#333333",
+			barWidth: 10,
+			delta: 30,
+			barSpace: 10,
+			animate: true,
+			animateTime: 500,
+			mouseWheelDirection: "vertical",
+			contentSpace: 2
+		});
 	});
 </script>
 </body>

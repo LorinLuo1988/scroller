@@ -16,9 +16,7 @@ module.exports = function (grunt) {
 				options: {
 					livereload: '<%= connect.options.livereload %>'
 				},
-				files: ['index.html','index.css', 'scroller/scroller.js',
-					'scroller/scroller.css'
-				]
+				files: ['index.html','index.css', 'scroller/scroller.js']
 			}
 		},
 		connect: {
@@ -43,7 +41,7 @@ module.exports = function (grunt) {
 				dest: 'dest/'
 			},
 			file2: {
-				src: ['scroller.js'],
+				src: ['scroller/scroller.js'],
 				dest: 'dest/scroller/'
 			}
 		},
@@ -57,7 +55,6 @@ module.exports = function (grunt) {
 		clean: {
 			js: ["dest/scroller/*.js", "!dest/scroller/*.min.js"]
 		}
-
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-jshint');
