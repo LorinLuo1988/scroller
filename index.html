@@ -27,6 +27,18 @@
 <script src="jquery-1.8.3.js"></script>
 <script src="scroller.js"></script>
 <script>
+	/*
+		@backgroundColor: the background color of bar content
+		@railColor: the background color of bar rail
+		@draggerColor: the background color of bar dragger
+		@barWidth: the width of bar(Integer)
+		@delta: move distance of bar when mouseWell every time(Integer)
+		@barSpace: the space between container and bar(Integer)
+		@animate: true/false
+		@animateTime: Integer
+		@mouseWheelDirection: control scroll bar when mouseWell event(horizontal/vertical)
+		@contentSpace: the space between content and bar(Integer)
+	 */
 	$(".destroy").on("click", function () {
 		$(".outer").lorinScroller("destroy");
 	});
