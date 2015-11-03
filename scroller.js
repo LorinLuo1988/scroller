@@ -28,6 +28,10 @@
 			prevOffsetTop: 0,
 			display: false
 		};
+		this.scrollBarYRailScratch = null;
+		this.scrollBarYDraggerScratch = null;
+		this.scrollBarXRailScratch = null;
+		this.scrollBarXDraggerScratch = null;
 		this.scrollBarX = {
 			bar: null,
 			dragger: null,
@@ -38,12 +42,20 @@
 			display: false
 		};
 		this.clickBarOrigin = null;
+		this.boxPrevWidth = this.box.width();
+		this.boxPrevHeight= this.box.height();
 
 		this.initialize();
 	}
 
 	Scroller.prototype.initialize = function () {
-		this.createBox().createBar(true, "X").createBar(true, "Y").eventRegister();
+		this.originContent = this.box.children().clone(true, true);
+		this.boxPrevWidth = this.box.width();
+		this.boxPrevHeight= this.box.height();
+		this.box[0].scrollerObj = this;
+
+		this.createBox().createBar(true, "X").createBar(true, "Y")
+			.eventRegister();
 
 		return this;
 	};
@@ -69,6 +81,22 @@
 		this.scrollBox = $("<div class='lorin-scroll-box'></div>");
 		this.contentBox = $("<div class='lorin-content'></div>");
 
+		this.contentBox.append(this.box.children().clone(true, true));
+
+		this.box.empty();
+		this.scrollBox.append(this.contentBox);
+		this.container.append(this.scrollBox);
+		this.box.append(this.container);
+
+		if (this.contentBox.height() <= this.box.height() && this.contentBox.width() <= this.box.width()) {
+			this.box.empty().append(this.contentBox.html());
+			this.container = null;
+			this.scrollBox = null;
+			this.contentBox = null;
+
+			return this;
+		}
+
 		this.container.css({
 			width: this.box.width() - this.config.barSpace * 2 - this.config.barWidth - this.config.contentSpace,
 			height: this.box.height() - this.config.barSpace * 2 - this.config.barWidth - this.config.contentSpace,
@@ -87,14 +115,9 @@
 
 		this.contentBox.css({
 			position: "absolute",
-			top: 0
+			top: 0,
+			left: 0
 		});
-
-		this.contentBox.html(this.box.html());
-		this.box.empty();
-		this.scrollBox.append(this.contentBox);
-		this.container.append(this.scrollBox);
-		this.box.append(this.container);
 
 		if (this.contentBox.height() <= this.scrollBox.height()) {
 			this.container.css({
@@ -120,35 +143,44 @@
 	Scroller.prototype.createBar = function (create, direction) {
 		var config = this.config;
 
+		if (!this.container) {
+			return this;
+		}
+
 		if (create) {
 			this["scrollBar" + direction].bar = $("<div class='lorin-bar'></div>");
 			this["scrollBar" + direction].dragger = $("<div class='lorin-dragger'></div>");
 			this["scrollBar" + direction].bar.css("display", "none");
 		}
 
-		if (!this["scrollBar" + direction].bar) {
-			return this;
+
+		if (this["scrollBar" + direction].bar) {
+			this["scrollBar" + direction].bar.css({
+				position: "absolute",
+				borderRadius: config.barWidth,
+				backgroundColor: config.railColor
+			});
 		}
 
-		this["scrollBar" + direction].bar.css({
-			position: "absolute",
-			borderRadius: config.barWidth,
-			backgroundColor: config.railColor
-		});
-
-		this["scrollBar" + direction].dragger.css({
-			position: "absolute",
-			top: 0,
-			left: 0,
-			backgroundColor: config.draggerColor,
-			borderRadius: config.barWidth
-		});
+		if (this["scrollBar" + direction].dragger) {
+			this["scrollBar" + direction].dragger.css({
+				position: "absolute",
+				top: 0,
+				left: 0,
+				backgroundColor: config.draggerColor,
+				borderRadius: config.barWidth
+			});
+		}
 
 		if (direction == "Y") {
 			if (this.contentBox.height() <= this.scrollBox.height()) {
 				this["scrollBar" + direction].bar.remove();
 				this["scrollBar" + direction] = {};
 				return this;
+			} else {
+				if (!this["scrollBar" + direction].bar) {
+					this.createBar(true, direction);
+				}
 			}
 
 			this["scrollBar" + direction].bar.css({
@@ -165,13 +197,16 @@
 			});
 
 			this.scrollBarY.ratio = (this.contentBox.height() - this.scrollBox.height()) / (this.scrollBox.height() - this.scrollBarY.dragger.height());
-			this.scrollBarY.StepCount = Math.ceil((this.scrollBox.height() - this.scrollBarY.dragger.height()) / this.config.delta);
 		} else if (direction == "X") {
 			if (this.contentBox.width() <= this.scrollBox.width()) {
 				this["scrollBar" + direction].bar.remove();
 				this["scrollBar" + direction] = {};
 
 				return this;
+			} else {
+				if (!this["scrollBar" + direction].bar) {
+					this.createBar(true, direction);
+				}
 			}
 
 			this["scrollBar" + direction].bar.css({
@@ -186,8 +221,7 @@
 				height: config.barWidth
 			});
 
-			this.scrollBarX.ratio =  (this.contentBox.width() - this.scrollBox.width()) / (this.scrollBox.width() - this.scrollBarX.dragger.width());
-			this.scrollBarY.StepCount = Math.ceil((this.scrollBox.width() - this.scrollBarX.dragger.width()) / this.config.delta);
+			this.scrollBarX.ratio = (this.contentBox.width() - this.scrollBox.width()) / (this.scrollBox.width() - this.scrollBarX.dragger.width());
 		}
 
 		if (create) {
@@ -200,6 +234,10 @@
 
 	Scroller.prototype.eventRegister = function () {
 		var self = this;
+
+		if (!this.container) {
+			return this;
+		}
 
 		this.container.on("mouseenter", function () {
 			if (self.scrollBarX.bar) {
@@ -261,6 +299,8 @@
 		});
 
 		this.scrollBox.on(Scroller.mousewheel, {scope: this}, this.mouseWheelFun);
+
+		return this;
 	};
 
 	Scroller.prototype.draggerMouseDownFun = function (event) {
@@ -346,19 +386,19 @@
 
 		if (e.wheelDelta) { //IE, Chrome
 			if (e.wheelDelta > 0) { //当滑轮向上滚动时
-				direction = mouseWheelDirection == "vertical" ? "up" : "left";
+				direction = mouseWheelDirection == "vertical" ? "up" : "right";
 			}
 
 			if (e.wheelDelta < 0) { //当滑轮向下滚动时
-				direction = mouseWheelDirection == "vertical" ? "down" : "right";
+				direction = mouseWheelDirection == "vertical" ? "down" : "left";
 			}
 		} else if (e.detail) { //Firefox
 			if (e.detail > 0) { //当滑轮向上滚动时
-				direction = mouseWheelDirection == "vertical" ? "down" : "right";
+				direction = mouseWheelDirection == "vertical" ? "down" : "left";
 			}
 
 			if (e.detail < 0) { //当滑轮向下滚动时
-				direction = mouseWheelDirection == "vertical" ? "up" : "left";
+				direction = mouseWheelDirection == "vertical" ? "up" : "right";
 			}
 
 		}
@@ -369,7 +409,7 @@
 			self.scrollBarY.draggerTop -= deltaY;
 		} else if (mouseWheelDirection == "horizontal") {
 			var deltaX = direction == "left" ? self.config.delta : -self.config.delta;
-			self.scrollBarX.contentLeft += deltaX * self.scrollBarY.ratio;
+			self.scrollBarX.contentLeft += deltaX * self.scrollBarX.ratio;
 			self.scrollBarX.draggerLeft -= deltaX;
 		}
 
@@ -399,20 +439,33 @@
 
 	Scroller.prototype.updatePosition = function (direction, isDragger) {
 		var self = this;
+		var location = arguments[0];
+
+		if (typeof location == "object") {
+			direction = location.direction;
+			if (direction == "right") {
+				self.scrollBarX.draggerLeft = location.location;
+				self.scrollBarX.contentLeft = -self.scrollBarX.draggerLeft * self.scrollBarX.ratio;
+			}
+
+			if (direction == "up") {
+				self.scrollBarY.draggerTop = location.location;
+				self.scrollBarY.contentTop = -self.scrollBarY.draggerTop * self.scrollBarY.ratio
+			}
+
+		}
 
 		if (direction == "up" || direction == "down") { //Y轴滚动条
 			if (!self.scrollBarY.bar) {
 				return false;
 			}
 
-			if (Math.abs(self.scrollBarY.draggerTop) > self.scrollBarY.bar.height() - self.scrollBarY.dragger.height()) {
-				self.scrollBarY.contentTop = self.scrollBox.height() - self.contentBox.height();
-				self.scrollBarY.draggerTop = self.scrollBarY.bar.height() - self.scrollBarY.dragger.height() + 1;
-			}
-
 			if (self.scrollBarY.contentTop > 0) {
 				self.scrollBarY.contentTop = 0;
 				self.scrollBarY.draggerTop = 0;
+			} else if (Math.abs(self.scrollBarY.draggerTop) > self.scrollBarY.bar.height() - self.scrollBarY.dragger.height()) {
+				self.scrollBarY.contentTop = self.scrollBox.height() - self.contentBox.height();
+				self.scrollBarY.draggerTop = self.scrollBarY.bar.height() - self.scrollBarY.dragger.height() + 1;
 			}
 
 			if (!self.config.animate) {
@@ -427,30 +480,38 @@
 				self.scrollBarY.dragger.stop(true, false);
 			}
 
-			self.contentBox.animate({
-				top: self.scrollBarY.contentTop
-			}, self.config.animateTime, 'swing');
+			if (typeof location == "object") {
+				self.contentBox.css({
+					top: self.scrollBarY.contentTop
+				});
 
-			if (isDragger) {
-				self.scrollBarY.dragger.css("top", self.scrollBarY.draggerTop);
-			} else {
-				self.scrollBarY.dragger.animate({
+				self.scrollBarY.dragger.css({
 					top: self.scrollBarY.draggerTop
+				});
+			} else {
+				self.contentBox.animate({
+					top: self.scrollBarY.contentTop
 				}, self.config.animateTime, 'swing');
+
+				if (isDragger) {
+					self.scrollBarY.dragger.css("top", self.scrollBarY.draggerTop);
+				} else {
+					self.scrollBarY.dragger.animate({
+						top: self.scrollBarY.draggerTop
+					}, self.config.animateTime, 'swing');
+				}
 			}
 		} else if (direction == "left" || direction == "right") { //X轴滚动条
 			if (!self.scrollBarX.bar) {
 				return false;
 			}
 
-			if (Math.abs(self.scrollBarX.draggerLeft) > self.scrollBarX.bar.width() - self.scrollBarX.dragger.width()) {
-				self.scrollBarX.contentLeft = self.scrollBox.width() - self.contentBox.width();
-				self.scrollBarX.draggerLeft = self.scrollBarX.bar.width() - self.scrollBarX.dragger.width() + 1;
-			}
-
 			if (self.scrollBarX.draggerLeft < 0) {
 				self.scrollBarX.contentLeft = 0;
 				self.scrollBarX.draggerLeft = 0;
+			} else if (Math.abs(self.scrollBarX.draggerLeft) > self.scrollBarX.bar.width() - self.scrollBarX.dragger.width()) {
+				self.scrollBarX.contentLeft = self.scrollBox.width() - self.contentBox.width();
+				self.scrollBarX.draggerLeft = self.scrollBarX.bar.width() - self.scrollBarX.dragger.width() + 1;
 			}
 
 
@@ -466,16 +527,26 @@
 				self.scrollBarX.dragger.stop(true, false);
 			}
 
-			self.contentBox.animate({
-				left: self.scrollBarX.contentLeft
-			}, self.config.animateTime, 'swing');
+			if (typeof location == "object") {
+				self.contentBox.css({
+					left: self.scrollBarX.contentLeft
+				});
 
-			if (isDragger) {
-				self.scrollBarX.dragger.css("left", self.scrollBarX.draggerLeft);
-			} else {
-				self.scrollBarX.dragger.animate({
+				self.scrollBarX.dragger.css({
 					left: self.scrollBarX.draggerLeft
+				});
+			} else {
+				self.contentBox.animate({
+					left: self.scrollBarX.contentLeft
 				}, self.config.animateTime, 'swing');
+
+				if (isDragger) {
+					self.scrollBarX.dragger.css("left", self.scrollBarX.draggerLeft);
+				} else {
+					self.scrollBarX.dragger.animate({
+						left: self.scrollBarX.draggerLeft
+					}, self.config.animateTime, 'swing');
+				}
 			}
 		}
 	};
@@ -503,22 +574,25 @@
 	};
 
 	Scroller.prototype.update = function (setting) {
-		if (!setting) {
-			return false;
-		}
+		this.config = {
+			backgroundColor: setting && setting.backgroundColor || "#c2c2c2",
+			railColor: setting && setting.railColor || "lightslategray",
+			draggerColor: setting && setting.draggerColor || "#ffff00",
+			barWidth: setting && setting.barWidth || 5,
+			delta: setting && setting.delta || 50,
+			barSpace: setting && setting.barSpace || 5,
+			animate: setting && setting.animate || true,
+			animateTime: setting && setting.animateTime || 300,
+			mouseWheelDirection: setting && setting.mouseWheelDirection || "horizontal",
+			contentSpace: setting && setting.contentSpace || 5
+		};
 
-		this.config.backgroundColor = setting.backgroundColor ? setting.backgroundColor : this.config.backgroundColor;
-		this.config.railColor = setting.railColor ? setting.railColor : this.config.railColor;
-		this.config.draggerColor = setting.draggerColor ? setting.draggerColor : this.config.draggerColor;
-		this.config.barWidth = setting.barWidth ? setting.barWidth : this.config.barWidth;
-		this.config.delta = setting.delta ? setting.delta : this.config.delta;
-		this.config.barSpace = setting.barSpace ? setting.barSpace : this.config.barSpace;
-		this.config.mouseWheelDirection = setting.mouseWheelDirection ? setting.mouseWheelDirection : this.config.mouseWheelDirection;
-		this.config.animate = setting.animate;
-		this.config.animateTime = setting.animateTime ? setting.animateTime : this.config.animateTime;
-		this.config.contentSpace = setting.contentSpace ? setting.contentSpace : this.config.contentSpace;
+		var prevOffsetTop = this.scrollBarY.draggerTop;
+		var prevOffsetLeft = this.scrollBarX.draggerLeft;
 
 		this.setStyle();
+		this.updatePosition({direction: "right", location: prevOffsetLeft});
+		this.updatePosition({direction: "up", location: prevOffsetTop});
 
 		return this;
 	};
@@ -555,10 +629,13 @@
 	};
 
 	Scroller.prototype.destroy = function (setting, dom) {
-		this.box.html(this.contentBox.html());
+		if (!this.container) {
+			return this;
+		}
 
+		this.box.empty();
+		this.box.append(this.originContent);
 		this.container.off("mouseenter");
-
 		this.container.off("mouseleave");
 
 		if (this.scrollBarX.bar) {
@@ -595,11 +672,37 @@
 			display: false
 		};
 		this.clickBarOrigin = null;
+		this.container = null;
+		this.scrollBox = null;
+		this.contentBox = null;
 		delete dom.scrollerObj;
+
+		return this;
 	};
 
 	Scroller.prototype.autoUpdate = function () {
+		var self = this;
+		var boxPrevWidth = this.box.width();
+		var boxPrevHeight= this.box.height();
+		var contentPrevWidth = this.contentBox.width();
+		var contentPrevHeight= this.contentBox.height();
 
+		this.autoUpdateTimer = setInterval(function () {
+			if (boxPrevWidth != self.box.width() || boxPrevHeight != self.box.height() || contentPrevWidth != self.contentBox.width() || contentPrevHeight != self.contentBox.height()) {
+				self.originContent = self.contentBox.children().clone(true, true);
+
+				self.setStyle();
+			}
+
+			boxPrevWidth = self.box.width();
+			boxPrevHeight= self.box.height();
+			contentPrevWidth = self.contentBox.width();
+			contentPrevHeight= self.contentBox.height();
+		}, 60);
+	};
+
+	Scroller.prototype.cancelAutoUpdate = function () {
+		clearInterval(this.autoUpdateTimer);
 	};
 
 	$.fn.extend({

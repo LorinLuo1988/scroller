@@ -16,7 +16,7 @@ module.exports = function (grunt) {
 				options: {
 					livereload: '<%= connect.options.livereload %>'
 				},
-				files: ['index.html','index.css', 'scroller/scroller.js']
+				files: ['index.html','index.css', 'scroller.js']
 			}
 		},
 		connect: {
@@ -36,24 +36,20 @@ module.exports = function (grunt) {
 			}
 		},
 		copy: {
-			file1: {
-				src: ['index.html', 'index.css', 'jquery-1.8.3.js'],
+			file: {
+				src: ['index.html', 'index.css', 'jquery-1.8.3.js', 'scroller.js'],
 				dest: 'dest/'
-			},
-			file2: {
-				src: ['scroller/scroller.js'],
-				dest: 'dest/scroller/'
 			}
 		},
 		uglify: {
 			my_target: {
 				files: {
-					'dest/scroller/scroller.min.js': ['dest/scroller/scroller.js']
+					'dest/scroller/scroller.min.js': ['dest/scroller.js']
 				}
 			}
 		},
 		clean: {
-			js: ["dest/scroller/*.js", "!dest/scroller/*.min.js"]
+			js: ["dest/scroller.js", "!dest/scroller/*.min.js"]
 		}
 	});
 

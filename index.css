@@ -10,11 +10,11 @@
 }
 
 .inner {
-	width: 2000px;
+	width: 1000px;
 }
 
 .inner p {
-	line-height: 200px;
+	line-height: 100px;
 	color: #000000;
 }
 

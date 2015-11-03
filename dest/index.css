@@ -3,10 +3,10 @@
 	padding: 0;
 }
 .outer {
-	width: 200px;
+	width: 600px;
 	height: 400px;
 	margin: 0 auto;
-	background-color: #555;
+	border: 1px solid green;
 }
 
 .inner {
@@ -14,6 +14,14 @@
 }
 
 .inner p {
-	line-height: 200px;
-	color: #ffffff;
+	line-height: 100px;
+	color: #000000;
+}
+
+.a {
+	width: 100px;
+	height: 100px;
+	padding: 20px;
+	border: 1px solid green;
+	position: relative;
 }
