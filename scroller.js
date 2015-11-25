@@ -90,12 +90,12 @@
 		this.box.append(this.container);
 
 		if (this.contentBox.height() <= this.box.height() && this.contentBox.width() <= this.box.width()) {
-			this.box.empty().append(this.contentBox.html());
-			this.container = null;
-			this.scrollBox = null;
-			this.contentBox = null;
-
-			return false;
+			//this.box.empty().append(this.contentBox.html());
+			//this.container = null;
+			//this.scrollBox = null;
+			//this.contentBox = null;
+			//
+			//return false;
 		}
 
 		this.container.css({
@@ -177,7 +177,8 @@
 					this["scrollBar" + direction].bar.remove();
 				}
 
-				this["scrollBar" + direction] = {};
+				this["scrollBar" + direction].bar = null;
+				this["scrollBar" + direction].dragger = null;
 				return this;
 			} else {
 				if (!this["scrollBar" + direction].bar) {
@@ -212,7 +213,8 @@
 					this["scrollBar" + direction].bar.remove();
 				}
 
-				this["scrollBar" + direction] = {};
+				this["scrollBar" + direction].bar = null;
+				this["scrollBar" + direction].dragger = null;
 
 				return this;
 			} else {
@@ -605,7 +607,7 @@
 			barWidth: setting && setting.barWidth || this.config.barWidth,
 			delta: setting && setting.delta || this.config.delta,
 			barSpace: setting && setting.barSpace || this.config.barSpace,
-			animate: setting && setting.animate || true,
+			animate: (setting && (setting.animate != undefined)) ? setting.animate : this.config.animate,
 			animateTime: setting && setting.animateTime || this.config.animateTime,
 			mouseWheelDirection: setting && setting.mouseWheelDirection || this.config.mouseWheelDirection,
 			contentSpace: setting && setting.contentSpace || this.config.contentSpace
@@ -636,6 +638,7 @@
 			this.container.css({
 				paddingRight: this.config.barSpace
 			});
+			this.contentBox.css("top", 0);
 		}
 
 		if (this.contentBox.width() <= this.scrollBox.width()) {
@@ -643,6 +646,7 @@
 				height: this.box.height() - this.config.barSpace * 2,
 				paddingBottom: this.config.barSpace
 			});
+			this.contentBox.css("left", 0);
 		}
 
 		this.createBar(false, "X").createBar(false, "Y");
