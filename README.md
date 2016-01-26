@@ -20,8 +20,11 @@
 	
 	@contentSpace: the space between content and bar(Integer)
 
+#method
 	create: 1. html (add className "lorin-scroll" with container);
-			2. js ($(selector).lorinScroller(setting)); ----setting is object
+		2. js ($(selector).lorinScroller(setting)); ----setting is object
+		
 	 destroy: ($(selector).lorinScroller("destroy")
+
 	 update: ($(selector).lorinScroller("update", setting) ----setting is object
 	 
