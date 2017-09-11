@@ -27,5 +27,3 @@
 	 destroy: ($(selector).lorinScroller("destroy")
 
 	 update: ($(selector).lorinScroller("update", setting) ----setting is object
-	 
-	 
